@@ -4,9 +4,9 @@ Connection Module
 Handles put and get operations to the Bigcommerce REST API
 """
 
-import urllib, json # only used for urlencode querystr
+import urllib, json  # only used for urlencode querystr
 import logging
-from pprint import pformat # only used once for logging, in __load_urls
+from pprint import pformat  # only used once for logging, in __load_urls
 
 import requests
 
@@ -141,9 +141,9 @@ class Connection(object):
         if res.status_code in (200, 201, 202):
             try:
                 result = res.json()
-            except Exception as e: # json might be invalid, or store might be down
-                print res.content
-                raise # TODO more specific exceptions
+            except Exception as e:  # json might be invalid, or store might be down
+                e.message += " (_handle_response failed to decode JSON: " + str(res.content) + ")"
+                raise  # TODO better exception
             if self._map_wrap:
                 if isinstance(result, list):
                     return map(Mapping, result)
