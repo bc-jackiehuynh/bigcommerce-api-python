@@ -55,3 +55,49 @@ class TestOAuthConnection(unittest.TestCase):
         self.assertTrue(user_data != False)
         self.assertTrue(user_data['user']['id'] == 72)
         self.assertTrue(user_data['user']['email'] == "jackie.huynh@bigcommerce.com")
+
+    def test_create_delete(self):
+        """Test creating a resource, then deleting it."""
+        with vcr.use_cassette('fixtures/vcr/test_create_delete.yaml', match_on=['method', 'url', 'headers', 'body']):
+            cid = "iu4mk0piq5r664w687c1d6lv84mz1s9"
+            store_hash = "lctvh5wm"
+            token = "7ij6bj9q78g0hu8xusumgj5dss70t8b"
+            conn = api.OAuthConnection(cid, store_hash, token, host='18828145.ngrok.com')
+            expected = [{'amount': '5.0000',
+                         'code': '3E13CB68AAAEBE5',
+                         'name': '5% off order total'},
+                        {'amount': u'10.0000',
+                         'code': u'9DB19A3F921355C',
+                         'name': u'10% off order total'},
+                        {'amount': u'0.0000',
+                         'code': u'FCA407528841E55',
+                         'name': u'Free shipping'},
+                        {'amount': u'5.0000',
+                         'code': u'CFF623E6B5219CA',
+                         'name': u'$5 off shipping'}]
+            coupons = conn.get('coupons')
+            for i, data in enumerate(expected):
+                self.assertTrue(coupons[i].amount == data['amount'])
+                self.assertTrue(coupons[i].code == data['code'])
+                self.assertTrue(coupons[i].name == data['name'])
+            new_data = {'amount': 11.0,
+                        'code': "SOMETHINGRANDOM1234",
+                        'name': "Hi Im Coupon",
+                        'type': "percentage_discount",
+                        'applies_to': {'entity': "products", 'ids': [37]}}
+            conn.create('coupons', new_data)
+            new_data['amount'] = "11.0000"
+            expected.append(new_data)
+            coupons = conn.get('coupons')
+            for i, data in enumerate(expected):
+                self.assertTrue(coupons[i].amount == data['amount'])
+                self.assertTrue(coupons[i].code == data['code'])
+                self.assertTrue(coupons[i].name == data['name'])
+            c = conn.get('coupons', code=new_data['code'])[0]
+            conn.delete('coupons/{}'.format(c.id))
+            expected.pop()
+            coupons = conn.get('coupons')
+            for i, data in enumerate(expected):
+                self.assertTrue(coupons[i].amount == data['amount'])
+                self.assertTrue(coupons[i].code == data['code'])
+                self.assertTrue(coupons[i].name == data['name'])
