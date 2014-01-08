@@ -132,7 +132,10 @@ class Connection(object):
         response = self._run_method('POST', url, data=data, headers=headers)
         return self._handle_response(url, response)
         
-    def delete(self, url):  # TODO: id parameter (if not then delete all)
+    def delete(self, url, id_=None):  # note that id_ can't be 0 - problem?
+        if id_:
+            if url[-1] != '/': url += '/'
+            url += str(id_)
         response = self._run_method('DELETE', url)
         return self._handle_response(url, response, suppress_empty=True)
     
