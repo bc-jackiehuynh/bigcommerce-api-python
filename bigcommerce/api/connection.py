@@ -100,6 +100,7 @@ class Connection(object):
         Retrieves the resource with given id 'rid', or all resources of given type.
         Keep in mind that the API returns a list for any query that doesn't specify an ID, even when applying
         a limit=1 filter.
+        Also be aware that float values tend to come back as strings ("2.0000" instead of 2.0)
 
         Keyword arguments can be parsed for filtering the query, for example:
             connection.get('products', limit=3, min_price=10.5)
